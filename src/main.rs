@@ -30,13 +30,22 @@ fn read_dir() -> Result<Vec<std::fs::DirEntry>, ReadDirError> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!(
-        "{:?}",
-        read_dir()?
-            .iter()
-            .map(|entry| entry.file_name().to_string_lossy().into_owned())
-            .filter(|name| !name.starts_with("."))
-            .collect::<Vec<String>>()
-    );
+    let mut dir = read_dir()?
+        .iter()
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .filter(|name| !name.starts_with("."))
+        .collect::<Vec<String>>();
+    dir.sort();
+
+    let length = dir.len();
+    for (i, name) in dir.iter().enumerate() {
+        print!("{}", name);
+        if i < length - 1 {
+            print!("  ");
+        } else {
+            println!();
+        }
+    }
+
     return Ok(());
 }
