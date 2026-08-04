@@ -1,28 +1,33 @@
-use std::{error::Error, ffi::OsString, fmt::Formatter};
+use std::{error::Error, ffi::OsString};
 
 #[derive(Debug)]
 enum ReadDirError {
-    Environment,
-    FileSystem,
+    FileSystem(std::io::Error),
 }
 
-impl Error for ReadDirError {}
+impl Error for ReadDirError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::FileSystem(err) => Some(err),
+        }
+    }
+}
 
 impl std::fmt::Display for ReadDirError {
-    fn fmt(&self, _fmt: &mut Formatter) -> Result<(), std::fmt::Error> {
-        Ok(())
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::FileSystem(err) => write!(f, "failed to read directory: {err}"),
+        }
     }
 }
 
 fn read_dir() -> Result<Vec<OsString>, ReadDirError> {
-    let entries =
-        std::fs::read_dir(std::env::current_dir().map_err(|_| ReadDirError::Environment)?)
-            .map_err(|_| ReadDirError::FileSystem)?;
+    let entries = std::fs::read_dir(".").map_err(ReadDirError::FileSystem)?;
 
     entries
         .map(|res| {
             res.map(|entry| entry.file_name())
-                .map_err(|_| ReadDirError::FileSystem)
+                .map_err(ReadDirError::FileSystem)
         })
         .collect()
 }
