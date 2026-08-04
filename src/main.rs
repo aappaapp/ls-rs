@@ -53,11 +53,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .collect();
     }
 
-    dir.sort_by_key(|a| {
-        a.file_name()
+    dir.sort_by(|a, b| {
+        let a_str = a
+            .file_name()
             .to_string_lossy()
             .trim_start_matches('.')
-            .to_string()
+            .to_lowercase();
+        let b_str = b
+            .file_name()
+            .to_string_lossy()
+            .trim_start_matches('.')
+            .to_lowercase();
+
+        a_str.cmp(&b_str)
     });
 
     println!(
