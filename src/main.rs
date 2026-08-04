@@ -57,15 +57,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .to_string()
     });
 
-    let length = dir.len();
-    for (i, name) in dir.iter().enumerate() {
-        print!("{}", name.file_name().to_string_lossy());
-        if i < length - 1 {
-            print!("  ");
-        } else {
-            println!();
-        }
-    }
+    println!(
+        "{}",
+        dir.iter()
+            .map(|entry| entry.file_name().to_string_lossy().into_owned())
+            .collect::<Vec<String>>()
+            .join("  ")
+    );
 
     return Ok(());
 }
