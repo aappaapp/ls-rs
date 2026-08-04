@@ -1,5 +1,7 @@
 use std::error::Error;
 
+use clap::Parser;
+
 #[derive(Debug)]
 enum ReadDirError {
     FileSystem(std::io::Error),
@@ -29,17 +31,35 @@ fn read_dir() -> Result<Vec<std::fs::DirEntry>, ReadDirError> {
         .collect()
 }
 
+#[derive(Parser, Debug)]
+#[command(version, about = "ls in Rust", long_about = None)]
+struct Args {
+    #[arg(short = 'A', long)]
+    almost_all: bool,
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut dir = read_dir()?
-        .iter()
-        .map(|entry| entry.file_name().to_string_lossy().into_owned())
-        .filter(|name| !name.starts_with("."))
-        .collect::<Vec<String>>();
-    dir.sort();
+    let args = Args::parse();
+
+    let mut dir = read_dir()?;
+
+    if !args.almost_all {
+        dir = dir
+            .into_iter()
+            .filter(|entry| !entry.file_name().to_string_lossy().starts_with("."))
+            .collect();
+    }
+
+    dir.sort_by_key(|a| {
+        a.file_name()
+            .to_string_lossy()
+            .trim_start_matches('.')
+            .to_string()
+    });
 
     let length = dir.len();
     for (i, name) in dir.iter().enumerate() {
-        print!("{}", name);
+        print!("{}", name.file_name().to_string_lossy());
         if i < length - 1 {
             print!("  ");
         } else {
