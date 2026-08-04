@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
 
@@ -23,8 +23,8 @@ impl std::fmt::Display for ReadDirError {
     }
 }
 
-fn read_dir() -> Result<Vec<std::fs::DirEntry>, ReadDirError> {
-    let entries = std::fs::read_dir(".").map_err(ReadDirError::FileSystem)?;
+fn read_dir(path: PathBuf) -> Result<Vec<std::fs::DirEntry>, ReadDirError> {
+    let entries = std::fs::read_dir(path).map_err(ReadDirError::FileSystem)?;
 
     entries
         .map(|res| res.map_err(ReadDirError::FileSystem))
@@ -34,6 +34,9 @@ fn read_dir() -> Result<Vec<std::fs::DirEntry>, ReadDirError> {
 #[derive(Parser, Debug)]
 #[command(version, about = "ls in Rust", long_about = None)]
 struct Args {
+    #[arg(default_value = ".")]
+    path: PathBuf,
+
     #[arg(short = 'A', long)]
     almost_all: bool,
 }
@@ -41,7 +44,7 @@ struct Args {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
-    let mut dir = read_dir()?;
+    let mut dir = read_dir(args.path)?;
 
     if !args.almost_all {
         dir = dir
