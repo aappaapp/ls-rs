@@ -23,6 +23,12 @@
             cargo
           ];
         };
+        packages.default = pkgs.rustPlatform.buildRustPackage (finalAttrs: {
+          pname = "ls-rs";
+          version = "0.1.0";
+          src = ./.;
+          cargoHash = "sha256-e+QujEq7436eFvNpMIXU0Cb3NS0wHpqlSoWz5G9x66c=";
+        });
       };
       flake = { };
     };
